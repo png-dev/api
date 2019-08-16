@@ -6,7 +6,3 @@ services:
             - "8888:8888"
         volumes:
             - .:/code
-        depends_on:
-            - redis
-    redis:
-        image: redis

@@ -1,5 +1,4 @@
 flask
 requests
-redis
 PyJWT==1.4.0
 
