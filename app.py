@@ -7,7 +7,7 @@ import os
 app = flask.Flask(__name__)
 
 # URL = os.environ.get('URL', 'https://dtw-management-core-1beed72f-odoo.dnpwater.net/')
-URL = os.environ.get('URL', 'http://127.0.0.1:8069/')
+URL = os.environ.get('URL', 'http://192.168.100.4:8069/')
 
 
 @app.route('/api/v1/users/login', methods=['POST'])
@@ -44,22 +44,30 @@ def login():
 
 @app.route('/api/v1/tickets', methods=['GET'])
 def getAll():
-    URL_LIST_TICKETS = URL + "api/helpdesk.ticket/method/get_all_tickets?"
+    URL_LIST_TICKETS = URL + "api/helpdesk.ticket/method/get_tickets?"
+    URL_LIST_ID = URL + 'api/helpdesk.ticket/search?'
 
     token = request.headers.get("Authorization")
     payload_data = jwt.decode(token, 'SECRET_KEY', algorithms="HS256")
     token_odoo = payload_data['token']
-    user_id = payload_data['uid']
 
-    URL_LIST_TICKETS = URL_LIST_TICKETS + "token=" + token_odoo + "args={'user_id': " + user_id + "}"
+    URL_LIST_ID = URL_LIST_ID + "token=" + token_odoo
+    responseIDs = requests.get(URL_LIST_ID)
+    jsonids = json.loads(responseIDs.text)
+    listIds = '[ '
+    for id in jsonids:
+        strid = id['id']
+        listIds = listIds + str(strid) + ', '
+    listIds = listIds + ' ]'
+
+    URL_LIST_TICKETS = URL_LIST_TICKETS + "token=" + token_odoo + "&ids=" + listIds
     responseListCheck = requests.get(URL_LIST_TICKETS)
     jsonData = json.loads(responseListCheck.text)
-    return jsonData
-    # try:
-    #     listCheckIn = jsonData['success']
-    #     return jsonify(listCheckIn), 200
-    # except Exception as e:
-    #     return '', 201
+    try:
+        listCheckIn = jsonData['success']
+        return jsonify(listCheckIn), 200
+    except Exception as e:
+        return '', 201
 
 
 @app.route('/api/v1/tickets/{id}', methods=['GET'])
