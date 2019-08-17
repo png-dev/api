@@ -72,26 +72,26 @@ def getAll():
         return '', 201
 
 
-@app.route('/api/v1/tickets/id', methods=['GET'])
-def getDetailTickets(id):
+@app.route('/api/v1/tickets/<int:id>', methods=['GET'])
+def getDetailTickets(id=0):
     try:
         URL_TICKET = URL + "api/helpdesk.ticket/method/get_detail_ticket?"
         token = request.headers.get("Authorization")
         payload_data = jwt.decode(token, 'SECRET_KEY', algorithms="HS256")
         token_odoo = payload_data['token']
         user_id = payload_data['uid']
-
-        URL_TICKET = URL_TICKET + "token=" + token_odoo + "&id=" + str(id)
+        id_ticket = '[' + str(id) + ',]'
+        URL_TICKET = URL_TICKET + "token=" + token_odoo + "&ids=" + id_ticket
         responseTicket = requests.get(URL_TICKET)
         jsonData = json.loads(responseTicket.text)
-        listTickets = jsonData['success']
-        return jsonify(listTickets), 200
+        listTicket = jsonData['success']
+        return jsonify(listTicket), 200
     except Exception as e:
         return '', 201
 
 
-@app.route('/api/v1/tickets/update/{id}', methods=['PUT'])
-def update(id):
+@app.route('/api/v1/tickets/update/<int:id>', methods=['PUT'])
+def update(id=0):
     try:
         URL_TICKET = URL + 'api/helpdesk.ticket/update/' + str(id)
         image_url = request.json['image_url']
@@ -106,8 +106,8 @@ def update(id):
 
         params = {
             'image_url': image_url,
-            'lat': lat,
-            'lng': lng,
+            'lat': float(lat),
+            'lng': float(lng),
             'kanban_state': 'done',
             'results': results,
         }
@@ -119,18 +119,22 @@ def update(id):
         requestBody = json.dumps(requestBodyForm)
 
         headers = {}
-        headers['Content-Type'] = "application/json";
+        headers['Content-Type'] = "application/json"
         response = requests.post(URL_TICKET, data=requestBody, headers=headers)
-        return response.text
-    except e:
+        jsonData = json.loads(response.text)
+        id = jsonData['id']
+        if id:
+            return '{"result": "success"}'
+        else:
+            return '{"result": "failed"}'
+    except:
         return '', 201
 
 
-@app.route('/api/v1/tickets/problem/{id}', methods=['PUT'])
+@app.route('/api/v1/tickets/problem/<int:id>', methods=['PUT'])
 def problem(id):
     try:
-        URL_TICKETS = URL + 'api/helpdesk.ticket/update/' + str(id)
-
+        URL_TICKET = URL + 'api/helpdesk.ticket/update/' + str(id)
         image_url = request.json['image_url']
         lat = request.json['lat']
         lng = request.json['lng']
@@ -138,13 +142,12 @@ def problem(id):
         token = request.headers.get("Authorization")
 
         payload_data = jwt.decode(token, 'SECRET_KEY', algorithms="HS256")
-        user_id = payload_data['uid']
         token_odoo = payload_data['token']
 
         params = {
             'image_url': image_url,
-            'lat': lat,
-            'lng': lng,
+            'lat': float(lat),
+            'lng': float(lng),
             'work_incident': work_incident,
         }
         requestBodyArray = {
@@ -156,8 +159,13 @@ def problem(id):
 
         headers = {}
         headers['Content-Type'] = "application/json"
-        response = requests.post(URL_TICKETS, data=requestBody, headers=headers)
-        return response.text
+        response = requests.post(URL_TICKET, data=requestBody, headers=headers)
+        jsonData = json.loads(response.text)
+        id = jsonData['id']
+        if id:
+            return '{"result": "success"}'
+        else:
+            return '{"result": "failed"}'
     except:
         return '', 201
 
