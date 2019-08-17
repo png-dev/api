@@ -3,29 +3,32 @@ from flask import request, jsonify
 import requests, json
 import jwt
 import os
+import logging
+
+__logger = logging.getLogger(__name__)
 
 app = flask.Flask(__name__)
 
 # URL = os.environ.get('URL', 'https://dtw-management-core-1beed72f-odoo.dnpwater.net/')
-URL = os.environ.get('URL', 'http://192.168.100.4:8069/')
+URL = os.environ.get('URL', 'http://192.168.43.21:8069/')
 
 
 @app.route('/api/v1/users/login', methods=['POST'])
 def login():
-    login = request.json['login']
-    password = request.json['password']
-    URL_LOGIN = URL + 'api/user/get_token'
-    params = {
-        'login': login,
-        'password': password
-    }
-    if params is not None:
-        URL_LOGIN += '?'
-    for key in params:
-        URL_LOGIN += key + '=' + params[key] + '&'
-    response = requests.get(URL_LOGIN)
-    data = json.loads(response.text)
     try:
+        login = request.json['login']
+        password = request.json['password']
+        URL_LOGIN = URL + 'api/user/get_token'
+        params = {
+            'login': login,
+            'password': password
+        }
+        if params is not None:
+            URL_LOGIN += '?'
+        for key in params:
+            URL_LOGIN += key + '=' + params[key] + '&'
+        response = requests.get(URL_LOGIN)
+        data = json.loads(response.text)
         result = data['success']
         payload = {
             'token': result['token'],
@@ -36,7 +39,7 @@ def login():
             'SECRET_KEY',
             algorithm='HS256'
         );
-        res = {'token': token.decode('unicode_escape')}
+        res = {'token': token.decode('unicode_escape'), 'name': result['name']}
         return jsonify(res), 200
     except Exception as e:
         return '', 201
@@ -44,41 +47,53 @@ def login():
 
 @app.route('/api/v1/tickets', methods=['GET'])
 def getAll():
-    URL_LIST_TICKETS = URL + "api/helpdesk.ticket/method/get_tickets?"
-    URL_LIST_ID = URL + 'api/helpdesk.ticket/search?'
-
-    token = request.headers.get("Authorization")
-    payload_data = jwt.decode(token, 'SECRET_KEY', algorithms="HS256")
-    token_odoo = payload_data['token']
-
-    URL_LIST_ID = URL_LIST_ID + "token=" + token_odoo
-    responseIDs = requests.get(URL_LIST_ID)
-    jsonids = json.loads(responseIDs.text)
-    listIds = '[ '
-    for id in jsonids:
-        strid = id['id']
-        listIds = listIds + str(strid) + ', '
-    listIds = listIds + ' ]'
-
-    URL_LIST_TICKETS = URL_LIST_TICKETS + "token=" + token_odoo + "&ids=" + listIds
-    responseListCheck = requests.get(URL_LIST_TICKETS)
-    jsonData = json.loads(responseListCheck.text)
     try:
-        listCheckIn = jsonData['success']
-        return jsonify(listCheckIn), 200
+        URL_LIST_TICKETS = URL + "api/helpdesk.ticket/method/get_all_tickets?"
+        URL_LIST_ID = URL + "api/helpdesk.ticket/search?"
+        token = request.headers.get("Authorization")
+        payload_data = jwt.decode(token, 'SECRET_KEY', algorithms="HS256")
+        token_odoo = payload_data['token']
+        user_id = payload_data['uid']
+
+        URL_LIST_ID = URL_LIST_ID + "token=" + token_odoo + "&domain=[('user_id', '=', " + str(user_id) + ")]"
+        responseListId = requests.get(URL_LIST_ID)
+        jsonids = json.loads(responseListId.text)
+        listIds = '[ '
+        for id in jsonids:
+            strid = id['id']
+            listIds = listIds + str(strid) + ', '
+        listIds = listIds + ' ]'
+        URL_LIST_TICKETS = URL_LIST_TICKETS + "token=" + token_odoo + "&ids=" + listIds
+        responseListTickets = requests.get(URL_LIST_TICKETS)
+        jsonData = json.loads(responseListTickets.text)
+        listTickets = jsonData['success']
+        return jsonify(listTickets), 200
     except Exception as e:
         return '', 201
 
 
-@app.route('/api/v1/tickets/{id}', methods=['GET'])
-def getDetailTickets():
-    print ('')
+@app.route('/api/v1/tickets/id', methods=['GET'])
+def getDetailTickets(id):
+    try:
+        URL_TICKET = URL + "api/helpdesk.ticket/method/get_detail_ticket?"
+        token = request.headers.get("Authorization")
+        payload_data = jwt.decode(token, 'SECRET_KEY', algorithms="HS256")
+        token_odoo = payload_data['token']
+        user_id = payload_data['uid']
+
+        URL_TICKET = URL_TICKET + "token=" + token_odoo + "&id=" + str(id)
+        responseTicket = requests.get(URL_TICKET)
+        jsonData = json.loads(responseTicket.text)
+        listTickets = jsonData['success']
+        return jsonify(listTickets), 200
+    except Exception as e:
+        return '', 201
 
 
 @app.route('/api/v1/tickets/update/{id}', methods=['PUT'])
 def update(id):
     try:
-        URL_TICKETS = URL + 'api/helpdesk.ticket/update/' + str(id)
+        URL_TICKET = URL + 'api/helpdesk.ticket/update/' + str(id)
         image_url = request.json['image_url']
         lat = request.json['lat']
         lng = request.json['lng']
@@ -105,7 +120,7 @@ def update(id):
 
         headers = {}
         headers['Content-Type'] = "application/json";
-        response = requests.post(URL_CHECKIN, data=requestBody, headers=headers)
+        response = requests.post(URL_TICKET, data=requestBody, headers=headers)
         return response.text
     except e:
         return '', 201
@@ -140,10 +155,10 @@ def problem(id):
         requestBody = json.dumps(requestBodyForm)
 
         headers = {}
-        headers['Content-Type'] = "application/json";
-        response = requests.post(URL_CHECKIN, data=requestBody, headers=headers)
+        headers['Content-Type'] = "application/json"
+        response = requests.post(URL_TICKETS, data=requestBody, headers=headers)
         return response.text
-    except e:
+    except:
         return '', 201
 
 
