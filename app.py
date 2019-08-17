@@ -124,9 +124,9 @@ def update(id=0):
         jsonData = json.loads(response.text)
         id = jsonData['id']
         if id:
-            return '{"result": "success"}'
+            return '{"result": "success"}',200
         else:
-            return '{"result": "failed"}'
+            return '{"result": "failed"}', 200
     except:
         return '', 201
 
@@ -163,9 +163,9 @@ def problem(id):
         jsonData = json.loads(response.text)
         id = jsonData['id']
         if id:
-            return '{"result": "success"}'
+            return '{"result": "success"}', 200
         else:
-            return '{"result": "failed"}'
+            return '{"result": "failed"}', 200
     except:
         return '', 201
 
