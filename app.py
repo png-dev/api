@@ -120,14 +120,7 @@ def update(id=0):
         response = requests.post(URL_TICKET, data=requestResult, headers=headers)
         jsonData = json.loads(response.text)
         id = jsonData['id']
-<<<<<<< HEAD
         return '{"result": "success"}', 200
-=======
-        if id:
-            return '{"result": "success"}',200
-        else:
-            return '{"result": "failed"}', 200
->>>>>>> 64eae7df28d38d27eb9c1a449987d3a53155a816
     except:
         return '', 201
 
@@ -163,14 +156,7 @@ def problem(id=0):
         response = requests.post(URL_TICKET, data=requestResult, headers=headers)
         jsonData = json.loads(response.text)
         id = jsonData['id']
-<<<<<<< HEAD
         return '{"result": "success"}', 200
-=======
-        if id:
-            return '{"result": "success"}', 200
-        else:
-            return '{"result": "failed"}', 200
->>>>>>> 64eae7df28d38d27eb9c1a449987d3a53155a816
     except:
         return '', 201
 
