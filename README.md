@@ -211,3 +211,14 @@
                     "result":{"type":"string"},
                 }
             }
+
+
+###Bảng mã lỗi
++ 200 - success. Thực hiện giao dịch thành công 
++ 400 - Bad request. Các tham số đầu vào không hợp lệ
++ 401 - Authorization required. Token không hợp lệ
++ 403 - Not allowed. Phương thức không hợp lệ
++ 404 - Not found. Không tìm thấy thông tin yêu cầu
++ 408 - Timeout. Giao dịch bị timeout
++ 500 - Internal error. Lỗi hệ thống, liên hệ với quản trị viên
++ 503 - Hệ thống đang bảo trì
