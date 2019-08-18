@@ -79,7 +79,6 @@ def getDetailTickets(id=0):
         token = request.headers.get("Authorization")
         payload_data = jwt.decode(token, 'SECRET_KEY', algorithms="HS256")
         token_odoo = payload_data['token']
-        user_id = payload_data['uid']
         id_ticket = '[' + str(id) + ',]'
         URL_TICKET = URL_TICKET + "token=" + token_odoo + "&ids=" + id_ticket
         responseTicket = requests.get(URL_TICKET)
@@ -99,9 +98,7 @@ def update(id=0):
         lng = request.json['lng']
         results = request.json['results']
         token = request.headers.get("Authorization")
-
         payload_data = jwt.decode(token, 'SECRET_KEY', algorithms="HS256")
-        user_id = payload_data['uid']
         token_odoo = payload_data['token']
 
         params = {
@@ -111,28 +108,25 @@ def update(id=0):
             'kanban_state': 'done',
             'results': results,
         }
-        requestBodyArray = {
+        requestBody = {
             'token': token_odoo,
             'update_vals': params
         }
-        requestBodyForm = {'params': requestBodyArray}
-        requestBody = json.dumps(requestBodyForm)
+        requestBodyForm = {'params': requestBody}
+        requestResult = json.dumps(requestBodyForm)
 
         headers = {}
         headers['Content-Type'] = "application/json"
-        response = requests.post(URL_TICKET, data=requestBody, headers=headers)
+        response = requests.post(URL_TICKET, data=requestResult, headers=headers)
         jsonData = json.loads(response.text)
         id = jsonData['id']
-        if id:
-            return '{"result": "success"}'
-        else:
-            return '{"result": "failed"}'
+        return '{"result": "success"}', 200
     except:
         return '', 201
 
 
 @app.route('/api/v1/tickets/problem/<int:id>', methods=['PUT'])
-def problem(id):
+def problem(id=0):
     try:
         URL_TICKET = URL + 'api/helpdesk.ticket/update/' + str(id)
         image_url = request.json['image_url']
@@ -150,22 +144,19 @@ def problem(id):
             'lng': float(lng),
             'work_incident': work_incident,
         }
-        requestBodyArray = {
+        requestBody = {
             'token': token_odoo,
             'update_vals': params
         }
-        requestBodyForm = {'params': requestBodyArray}
-        requestBody = json.dumps(requestBodyForm)
+        requestBodyForm = {'params': requestBody}
+        requestResult = json.dumps(requestBodyForm)
 
         headers = {}
         headers['Content-Type'] = "application/json"
-        response = requests.post(URL_TICKET, data=requestBody, headers=headers)
+        response = requests.post(URL_TICKET, data=requestResult, headers=headers)
         jsonData = json.loads(response.text)
         id = jsonData['id']
-        if id:
-            return '{"result": "success"}'
-        else:
-            return '{"result": "failed"}'
+        return '{"result": "success"}', 200
     except:
         return '', 201
 
