@@ -39,5 +39,5 @@ MAIL_USE_SSL = True
 MAIL_USERNAME = 'ns3.dnpwater@gmail.com'
 MAIL_PASSWORD = 'zaq1@2wsx#'
 MAIL_SUPPRESS_SEND = False
-MAIL_DEFAULT_SENDER = 'ns3.dnpwater@gmail.com'
-MAIL_DEFAULT_MS3_ADMIN = ['do.tran@dnpcorp.vn']
+MAIL_DEFAULT_SENDER = 'ns3@gmail.com'
+MAIL_DEFAULT_MS3_ADMIN = ['']
