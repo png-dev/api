@@ -19,7 +19,7 @@
    + Body
 
             {
-                "login": "phongng@gmail.com",
+                "email": "phongng@gmail.com",
                 "password":"12345"
             }
 
@@ -39,16 +39,14 @@
     + Body
 
             {
-                "name": "Nguyễn Gia Phong",
                 "token": "f9bcbe08106b497a8d81d6ed35aee639",
             }
     + Schema
 
             {
                 "type": "object",
-                "required": ["name","token"],
+                "required": ["token"],
                 "properties": {
-                    "name": {"type": "string" },
                     "token": {"type": "string" }
 
                 }
@@ -124,7 +122,7 @@
 
 
 ### 4.Update ticket [PUT]
-## Kêt quả hoàn thành tickets [/api/v1/tickets/update/{id_ticket}]
+## Kêt quả hoàn thành tickets [/api/v1/tickets/{id_ticket}/actions/SetToDone]
 ### [PUT]
 + Request
     + Headers
@@ -132,11 +130,12 @@
             Content-Type: application/json
             Authorization : token
     + Body
+
             {
-                "image_url": [http://gssds.sdfs/avatar.png",],
+                 "image_url": ["http://gssds.sdfs/avatar.png"],
                 "results": "Đã thu tiền nước",
                 "lat": 112.04 ,
-                "lng": 3234.0
+                "lng": 3234.0,
             }
 
     + Schema
@@ -169,7 +168,7 @@
             }
 
 ### 5. Update problem ticket [PUT]
-## Báo cáo sự cố  tickets [/api/v1/tickets/problem/{id_ticket}]
+## Báo cáo sự cố  tickets [/api/v1/tickets/{id_ticket}/actions/ReportProblem]
 ### [PUT]
 + Request
     + Headers
@@ -177,8 +176,9 @@
             Content-Type: application/json
             Authorization : token
     + Body
+    
             {
-                "image_url": [http://gssds.sdfs/avatar.png",],
+                "image_url": ["http://gssds.sdfs/avatar.png"],
                 "work_incident": "Bị vỡ ống nước",
                 "lat": 112.04 ,
                 "lng": 3234.0
@@ -213,7 +213,7 @@
             }
 
 
-###Bảng mã lỗi
+### Bảng mã lỗi
 + 200 - success. Thực hiện giao dịch thành công 
 + 400 - Bad request. Các tham số đầu vào không hợp lệ
 + 401 - Authorization required. Token không hợp lệ

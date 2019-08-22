@@ -1,0 +1,69 @@
+version: "3.4"
+
+services:
+  redis:
+    image: redis:3.0-alpine
+    command: redis-server --requirepass devpassword
+    volumes:
+      - redis:/data
+    networks:
+      - default
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  mrsservice:
+    image: docker.dnpcorp.net/${CI_PROJECT_NAME}/mobile_workforce_api:latest
+    command: gunicorn -c "python:config.gunicorn" --reload "mrsservice.app:create_app()" --access-logfile access_apis.log
+    depends_on:
+      - redis
+    environment:
+      - ODOO_URL=${ODOO_URL}
+      - CLOUDINARY_URL=${CLOUDINARY_URL}
+      - CLOUDAMQP_URL=${CLOUDAMQP_URL}
+
+    extra_hosts:
+      - "10.0.0.32:10.0.0.32"
+    networks:
+      - default
+      - traefik
+    deploy:
+      labels:
+        - traefik.docker.network=traefik
+        - traefik.port=5000
+      placement:
+        constraints:
+          - node.role == worker
+
+  celery:
+    image: docker.dnpcorp.net/${CI_PROJECT_NAME}/dwt_mrs_service:latest
+    command: celery worker -B -l info -A mrsservice.blueprints.transaction.tasks
+    command: celery worker -B -l info -A mrsservice.blueprints.webhook.tasks
+    command: celery worker -B -l info -A mrsservice.blueprints.partner.tasks
+    command: celery worker -B -l info -A mrsservice.blueprints.route.tasks
+    environment:
+      - CLOUDINARY_URL=${CLOUDINARY_URL}
+      - CLOUDAMQP_URL=${CLOUDAMQP_URL}
+      - ODOO_URL=${ODOO_URL}
+
+
+    networks:
+      - default
+    extra_hosts:
+      - "10.0.0.32:10.0.0.32"
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+
+volumes:
+  redis:
+    name: ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}-redis@raid1_40
+    driver: vsphere
+    driver_opts:
+      size: 4GB
+
+networks:
+  default:
+  traefik:
+    external: true
